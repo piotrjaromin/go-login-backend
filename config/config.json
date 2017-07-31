@@ -1,0 +1,15 @@
+{
+  "host" : "http://localhost:8080",
+  "mongo" : {
+    "server" : "localhost",
+    "database" : "login-template"
+  },
+  "frontendUrl": "http://localhost:3000",
+  "email" :{
+    "awsRegion" : "eu-west-1",
+    "replyAddr" : "no-reply@no-reply.com"
+  },
+  "tokens" : {
+    "siginKey" : "some-test-key"
+  }
+}

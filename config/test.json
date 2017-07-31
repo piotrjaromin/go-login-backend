@@ -1,0 +1,8 @@
+{
+  "host" : "http://localhost:8080",
+  "mongo" : {
+    "server" : "localhost",
+    "database" : "login-template-test"
+  },
+  "frontendUrl": "http://localhost:3000"
+}
