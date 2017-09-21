@@ -91,7 +91,7 @@ func CreateService(fbConfig FbConfig, accountsDal accounts.Dal, accountsService 
                                                 FirstName: fbFirstName,
                                                 LastName: fbLastName,
                                                 AuthProviders: accounts.AuthProviders{FB:fbID},
-                                                Username: fbToken.Username,
+                                                Username: fbFirstName+fbLastName,
                                         },
                                 },
                         }
