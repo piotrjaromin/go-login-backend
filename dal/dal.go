@@ -2,7 +2,7 @@ package dal
 
 import (
 	"github.com/op/go-logging"
-	"github.com/piotrjaromin/login-template/web"
+	"github.com/piotrjaromin/go-login-backend/web"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

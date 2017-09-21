@@ -6,14 +6,14 @@ import (
         "github.com/labstack/echo/engine/standard"
         "github.com/labstack/echo/middleware"
 
-        "github.com/piotrjaromin/login-template/jwtTokens"
-        "github.com/piotrjaromin/login-template/config"
-        "github.com/piotrjaromin/login-template/security"
-        "github.com/piotrjaromin/login-template/accounts"
-        "github.com/piotrjaromin/login-template/login"
-        "github.com/piotrjaromin/login-template/fbLogin"
-        "github.com/piotrjaromin/login-template/email"
-        "github.com/piotrjaromin/login-template/dal"
+        "github.com/piotrjaromin/go-login-backend/jwtTokens"
+        "github.com/piotrjaromin/go-login-backend/config"
+        "github.com/piotrjaromin/go-login-backend/security"
+        "github.com/piotrjaromin/go-login-backend/accounts"
+        "github.com/piotrjaromin/go-login-backend/login"
+        "github.com/piotrjaromin/go-login-backend/fbLogin"
+        "github.com/piotrjaromin/go-login-backend/email"
+        "github.com/piotrjaromin/go-login-backend/dal"
 )
 
 var log = logging.MustGetLogger("[Main]")

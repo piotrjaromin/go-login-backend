@@ -2,8 +2,8 @@ package login
 
 import (
         "github.com/labstack/echo"
-        "github.com/piotrjaromin/login-template/web"
-        "github.com/piotrjaromin/login-template/accounts"
+        "github.com/piotrjaromin/go-login-backend/web"
+        "github.com/piotrjaromin/go-login-backend/accounts"
         "github.com/op/go-logging"
 )
 

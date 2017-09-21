@@ -3,8 +3,8 @@ package accounts
 import (
         . "github.com/smartystreets/goconvey/convey"
         "testing"
-        "github.com/piotrjaromin/login-template/config"
-        "github.com/piotrjaromin/login-template/dal"
+        "github.com/piotrjaromin/go-login-backend/config"
+        "github.com/piotrjaromin/go-login-backend/dal"
         "github.com/smartystreets/assertions/should"
         "html/template"
         "github.com/satori/go.uuid"

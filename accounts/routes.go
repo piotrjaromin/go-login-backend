@@ -3,8 +3,8 @@ package accounts
 import (
         "github.com/op/go-logging"
         "github.com/labstack/echo"
-        "github.com/piotrjaromin/login-template/web"
-        "github.com/piotrjaromin/login-template/security"
+        "github.com/piotrjaromin/go-login-backend/web"
+        "github.com/piotrjaromin/go-login-backend/security"
 )
 
 //InitRoutes binds http handlers to paths

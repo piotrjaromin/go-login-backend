@@ -4,8 +4,8 @@ import (
         fb "github.com/huandu/facebook"
         "errors"
         "github.com/op/go-logging"
-	"github.com/piotrjaromin/login-template/accounts"
-        "github.com/piotrjaromin/login-template/jwtTokens"
+	"github.com/piotrjaromin/go-login-backend/accounts"
+        "github.com/piotrjaromin/go-login-backend/jwtTokens"
         
 )
 
@@ -28,7 +28,7 @@ type FbConfig struct {
 
 //Service used to login with facebook
 type Service struct {
-	Login func(fbToken Token) (*TokenWithEmail, error)
+	Login func(fbToken Token) (*Token, error)
 }
 
 //CreateService for fb login
@@ -56,7 +56,7 @@ func CreateService(fbConfig FbConfig, accountsDal accounts.Dal, accountsService 
                 })
         }
 
-	login := func(fbToken Token) (*TokenWithEmail, error) {
+	login := func(fbToken Token) (*Token, error) {
 		
                 session := app.Session(fbToken.Token)
 
@@ -91,6 +91,7 @@ func CreateService(fbConfig FbConfig, accountsDal accounts.Dal, accountsService 
                                                 FirstName: fbFirstName,
                                                 LastName: fbLastName,
                                                 AuthProviders: accounts.AuthProviders{FB:fbID},
+                                                Username: fbToken.Username,
                                         },
                                 },
                         }
@@ -113,9 +114,8 @@ func CreateService(fbConfig FbConfig, accountsDal accounts.Dal, accountsService 
                         return nil, ErrCouldNotGenerateToken
                 }
 
-                return &TokenWithEmail{
-                        Token: Token{tokenStr},
-                        Email: fbEmail,
+                return &Token{
+                        Token: tokenStr,
                 }, nil
 	}
 

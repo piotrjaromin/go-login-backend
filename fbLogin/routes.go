@@ -2,7 +2,7 @@ package fbLogin
 
 import (
         "github.com/labstack/echo"
-        "github.com/piotrjaromin/login-template/web"
+        "github.com/piotrjaromin/go-login-backend/web"
 )
 
 //InitRoutes binds http handlers to paths

@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"time"
 	"unicode"
-	e "github.com/piotrjaromin/login-template/web"
+	e "github.com/piotrjaromin/go-login-backend/web"
 	"errors"
 )
 
@@ -42,6 +42,7 @@ type UpdateAccountDto struct {
 type PasswordlessAccount struct {
 	Id             string    `bson:"_id"`
 	Email          string    `json:"email" bson:"email"`
+	Username       string    `json:"username" bson:"username"`
 	FirstName      string    `json:"firstName" bson:"firstName"`
 	LastName       string    `json:"lastName" bson:"lastName"`
 	CreatedAt      time.Time `json:"createdAt,omitempty" bson:"createdAt"`
@@ -86,12 +87,8 @@ func (acc Account) validate() []e.ErrorDetails {
 
 	var errors []e.ErrorDetails
 
-	if len(acc.FirstName) == 0 {
-		errors = e.AppendErrorDetails(errors, "firstName", "First name is required", e.MissingField)
-	}
-
-	if len(acc.LastName) == 0 {
-		errors = e.AppendErrorDetails(errors, "lastName", "Last name is required", e.MissingField)
+	if len(acc.Username) == 0 {
+		errors = e.AppendErrorDetails(errors, "username", "username is required", e.MissingField)
 	}
 
 	if !acc.Password.IsValid() {

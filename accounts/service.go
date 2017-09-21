@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"github.com/op/go-logging"
 	"github.com/satori/go.uuid"
-	"github.com/piotrjaromin/login-template/config"
-	"github.com/piotrjaromin/login-template/email"
-	"github.com/piotrjaromin/login-template/dal"
+	"github.com/piotrjaromin/go-login-backend/config"
+	"github.com/piotrjaromin/go-login-backend/email"
+	"github.com/piotrjaromin/go-login-backend/dal"
 )
 
 type Service struct {

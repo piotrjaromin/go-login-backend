@@ -1,8 +1,8 @@
 package accounts
 
 import (
-        "github.com/piotrjaromin/login-template/web"
-        "github.com/piotrjaromin/login-template/dal"
+        "github.com/piotrjaromin/go-login-backend/web"
+        "github.com/piotrjaromin/go-login-backend/dal"
         "time"
         "github.com/satori/go.uuid"
         "github.com/op/go-logging"

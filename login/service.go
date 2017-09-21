@@ -3,8 +3,8 @@ package login
 import (
 	"errors"
 	"github.com/op/go-logging"
-	"github.com/piotrjaromin/login-template/accounts"
-	"github.com/piotrjaromin/login-template/jwtTokens"
+	"github.com/piotrjaromin/go-login-backend/accounts"
+	"github.com/piotrjaromin/go-login-backend/jwtTokens"
 )
 
 //Errors that can be returned by this module

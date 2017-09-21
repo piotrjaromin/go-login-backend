@@ -3,7 +3,7 @@ package fbLogin
 import (
 	"github.com/labstack/echo"
 	"github.com/op/go-logging"
-	"github.com/piotrjaromin/login-template/web"
+	"github.com/piotrjaromin/go-login-backend/web"
 )
 
 //Controller for facebook login endpoint
@@ -22,6 +22,11 @@ func Create(service Service) Controller {
 		log.Debug("Starting login with facebook")
 		fbToken := Token{}
 		c.Bind(&fbToken)
+
+		errors := fbToken.Validate()
+		if len(errors) > 0 {
+			return web.BadRequestResponseWithDetails(c, "Invalid payload", errors)
+		}
 
 		appToken, err := service.Login(fbToken)
 		if err != nil {

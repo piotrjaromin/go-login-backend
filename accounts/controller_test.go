@@ -4,13 +4,13 @@ import (
         . "github.com/smartystreets/goconvey/convey"
         "testing"
         "github.com/labstack/echo"
-        "github.com/piotrjaromin/login-template/web"
+        "github.com/piotrjaromin/go-login-backend/web"
         "encoding/json"
         "net/http"
         "strings"
         "net/http/httptest"
         "github.com/labstack/echo/engine/standard"
-        "github.com/piotrjaromin/login-template/test"
+        "github.com/piotrjaromin/go-login-backend/test"
 )
 
 func TestController(t *testing.T) {

@@ -1,8 +1,8 @@
 package security
 
 import (
-	"github.com/piotrjaromin/login-template/jwtTokens"
-	"github.com/piotrjaromin/login-template/web"
+	"github.com/piotrjaromin/go-login-backend/jwtTokens"
+	"github.com/piotrjaromin/go-login-backend/web"
 	"github.com/labstack/echo"
 	"github.com/op/go-logging"
 	"encoding/json"

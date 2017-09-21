@@ -3,7 +3,7 @@ package accounts
 import (
 	"github.com/labstack/echo"
 	"github.com/op/go-logging"
-	"github.com/piotrjaromin/login-template/web"
+	"github.com/piotrjaromin/go-login-backend/web"
 	"net/http"
 	"net/url"
 )

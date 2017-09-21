@@ -1,10 +1,10 @@
 package test
 
 import (
-	"github.com/piotrjaromin/login-template/config"
-	"github.com/piotrjaromin/login-template/jwtTokens"
-	"github.com/piotrjaromin/login-template/dal"
-	"github.com/piotrjaromin/login-template/security"
+	"github.com/piotrjaromin/go-login-backend/config"
+	"github.com/piotrjaromin/go-login-backend/jwtTokens"
+	"github.com/piotrjaromin/go-login-backend/dal"
+	"github.com/piotrjaromin/go-login-backend/security"
 )
 
 func GetTestRepo(collection string) dal.Dal {

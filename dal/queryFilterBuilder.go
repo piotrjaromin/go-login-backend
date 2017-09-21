@@ -1,7 +1,7 @@
 package dal
 
 import (
-        "github.com/piotrjaromin/login-template/common"
+        "github.com/piotrjaromin/go-login-backend/common"
 )
 
 type QueryBuilder struct {
