@@ -37,13 +37,13 @@ func CreateEncrypt() Encrypt {
 
 		_, err := io.ReadFull(cryptoRand.Reader, saltInBytes)
 		if err != nil {
-			log.Error(err)
+			log.Error("Could not read salt in bytes. Details: ", err)
 		}
 
 		salt := fmt.Sprintf("%x", saltInBytes)
 		hash, cryptErr := cryptToHash(pass, salt)
 		if cryptErr != nil {
-			log.Error(cryptErr)
+			log.Error("Could not hash password. Details: ", cryptErr)
 		}
 
 		return hash, salt
