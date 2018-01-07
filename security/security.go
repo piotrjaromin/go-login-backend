@@ -83,7 +83,7 @@ func (sec Security) SecuredById(tokenClaimName string, requestClaimName string, 
 	}
 }
 
-func (sec Security) fillClaims() func(next echo.HandlerFunc) echo.HandlerFunc {
+func (sec Security) FillClaims() func(next echo.HandlerFunc) echo.HandlerFunc {
 	var log = logging.MustGetLogger("[Security]")
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
