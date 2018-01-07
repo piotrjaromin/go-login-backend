@@ -92,6 +92,7 @@ func (sec Security) FillClaims() func(next echo.HandlerFunc) echo.HandlerFunc {
 			if found {
 				claims := sec.tokenService.GetClaims(token)
 				for key, value := range claims {
+					log.Debugf("adding claim to request key %s, value %v", key, value)
 					c.Set(key, value)
 				}
 			}
