@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"regexp"
-
+	"strings"
 	"github.com/labstack/echo"
 	"github.com/op/go-logging"
 	"github.com/piotrjaromin/go-login-backend/jwtTokens"
