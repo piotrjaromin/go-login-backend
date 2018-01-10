@@ -105,9 +105,15 @@ func (sec Security) FillClaims() func(next echo.HandlerFunc) echo.HandlerFunc {
 func getToken(c echo.Context) (string, bool) {
 	authHeader := c.Request().Header().Get("Authorization")
 
-	if len(authHeader) < len("Bearer ") {
+	if !strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
 		return "", false
 	}
 
-	return authHeader[len("Bearer "):], true
+	bearerLen := len("Bearer ")
+	if len(authHeader) < bearerLen {
+		return "", false
+	}
+
+	return authHeader[bearerLen:], true
 }
+
