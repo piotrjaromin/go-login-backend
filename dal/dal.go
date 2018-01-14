@@ -64,7 +64,7 @@ func Create(repoConfig DalConfig) Dal {
 	getByQuery := func(container interface{}, pagination web.Pagination, query Query) error {
 
 		err := c.Find(query.fields). //
-						Sort("-createdAt").
+						Sort(query.sort...). 					 //
 						Skip((pagination.PageNumber - 1) * pagination.PageSize). //
 						Limit(pagination.PageSize).                              //
 						All(container)
