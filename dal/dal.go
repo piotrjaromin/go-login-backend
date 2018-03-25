@@ -25,6 +25,7 @@ type Dal struct {
 	DeleteByQuery   func(query Query) error
 	DeleteById      func(id string) error
 	AddToArray      func(id string, field string, element interface{}) error
+	AddToSet        func(id string, field string, element interface{}) error
 	DeleteFromArray func(id string, query Query) error
 }
 
@@ -121,6 +122,15 @@ func Create(repoConfig DalConfig) Dal {
 
 		return err
 	}
+	
+	addToSet := func(id string, field string, element interface{}) error {
+		_, err := c.UpsertId(id, bson.M{
+			"$addToSet": bson.M{field: element},
+		})
+
+		return err
+	}
+
 
 	deleteFromArray := func(id string, query Query) error {
 		_, err := c.UpsertId(id, bson.M{
@@ -143,5 +153,6 @@ func Create(repoConfig DalConfig) Dal {
 		DeleteById:      deleteById,
 		AddToArray:      addToArray,
 		DeleteFromArray: deleteFromArray,
+		AddToSet:	 addToSet,
 	}
 }
