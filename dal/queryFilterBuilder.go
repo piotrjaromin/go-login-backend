@@ -26,9 +26,10 @@ const (
 func NewQueryBuilder() *QueryBuilder {
         return &QueryBuilder{
                 query: Query{
-                        fields: map[string]interface{}{},
+                        fields:      map[string]interface{}{},
+                        orFields:    map[string]interface{}{},
                         projections: map[string]int{},
-                        sort: []string{},
+                        sort:        []string{},
                 },
         }
 }
