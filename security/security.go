@@ -3,13 +3,13 @@ package security
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
-	"regexp"
-	"strings"
 	"github.com/labstack/echo"
 	"github.com/op/go-logging"
 	"github.com/piotrjaromin/go-login-backend/jwtTokens"
 	"github.com/piotrjaromin/go-login-backend/web"
+	"io/ioutil"
+	"regexp"
+	"strings"
 )
 
 const CLAIM_IN_QUOTES_PATTERN = "\".*\""
@@ -28,7 +28,7 @@ func (sec Security) SecuredById(tokenClaimName string, requestClaimName string, 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 
-			if c.Request().Method() == "OPTIONS" {
+			if c.Request().Method == "OPTIONS" {
 				return nil
 			}
 
@@ -41,12 +41,12 @@ func (sec Security) SecuredById(tokenClaimName string, requestClaimName string, 
 			if claimInBody {
 				//read idCliamName from body and check if it matches the one stored in token
 				var jsonMap map[string]*json.RawMessage
-				var data, reqErr = ioutil.ReadAll(c.Request().Body())
+				var data, reqErr = ioutil.ReadAll(c.Request().Body)
 				if reqErr != nil {
 					return web.LogAndReturnInternalError(c, "[sec]error while reading request body", reqErr)
 				}
 
-				c.Request().SetBody(ioutil.NopCloser(bytes.NewBuffer(data)))
+				c.Request().Body = ioutil.NopCloser(bytes.NewBuffer(data))
 
 				err := json.Unmarshal(data, &jsonMap)
 				if err != nil {
@@ -103,7 +103,7 @@ func (sec Security) FillClaims() func(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func getToken(c echo.Context) (string, bool) {
-	authHeader := c.Request().Header().Get("Authorization")
+	authHeader := c.Request().Header.Get("Authorization")
 
 	if !strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
 		return "", false
@@ -116,4 +116,3 @@ func getToken(c echo.Context) (string, bool) {
 
 	return authHeader[bearerLen:], true
 }
-

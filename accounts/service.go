@@ -3,15 +3,16 @@ package accounts
 import (
 	"bytes"
 	"github.com/op/go-logging"
-	"github.com/satori/go.uuid"
 	"github.com/piotrjaromin/go-login-backend/config"
-	"github.com/piotrjaromin/go-login-backend/email"
 	"github.com/piotrjaromin/go-login-backend/dal"
+	"github.com/piotrjaromin/go-login-backend/email"
+	"github.com/satori/go.uuid"
 )
 
 type Service struct {
 	StartSignupAccount   func(email string, secAccount SecuredAccount) (string, error)
 	GetByEmail           func(email string) (PasswordlessAccount, error)
+	GetByUsername        func(email string) (PasswordlessAccount, error)
 	ConfirmAccount       func(email string, code string) (bool, error)
 	StartResetPassword   func(email string) error
 	ConfirmResetPassword func(email string, code string, newPassword Password) error
@@ -81,6 +82,10 @@ func CreateService(config config.Config, accountDal Dal, signupsDal dal.Dal, ema
 
 	getByEmailPasswordless := func(email string) (PasswordlessAccount, error) {
 		return accountDal.GetByEmail(email)
+	}
+
+	getByUsernamePasswordless := func(email string) (PasswordlessAccount, error) {
+		return accountDal.GetByUsername(email)
 	}
 
 	confirmAccount := func(email string, code string) (bool, error) {
@@ -178,5 +183,6 @@ func CreateService(config config.Config, accountDal Dal, signupsDal dal.Dal, ema
 		ConfirmResetPassword: confirmResetPassword,
 		CreateAccount:        createAccount,
 		UpdateByEmail:        updateByEmail,
+		GetByUsername:        getByUsernamePasswordless,
 	}
 }

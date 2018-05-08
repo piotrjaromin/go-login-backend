@@ -1,275 +1,277 @@
 package accounts
 
 import (
-        . "github.com/smartystreets/goconvey/convey"
-        "testing"
-        "github.com/labstack/echo"
-        "github.com/piotrjaromin/go-login-backend/web"
-        "encoding/json"
-        "net/http"
-        "strings"
-        "net/http/httptest"
-        "github.com/labstack/echo/engine/standard"
-        "github.com/piotrjaromin/go-login-backend/test"
+	"encoding/json"
+	"github.com/labstack/echo"
+	"github.com/piotrjaromin/go-login-backend/test"
+	"github.com/piotrjaromin/go-login-backend/web"
+	. "github.com/smartystreets/goconvey/convey"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
 )
 
 func TestController(t *testing.T) {
 
-        validAccount := Account{
-                PasswordlessAccount: PasswordlessAccount{
-                        FirstName: "Jhone",
-                        LastName: "Doe",
-                        Email: "test@test.com",
-                },
-                Password: "123456aA",
-        }
+	validAccount := Account{
+		PasswordlessAccount: PasswordlessAccount{
+			FirstName: "Jhone",
+			LastName:  "Doe",
+			Email:     "test@test.com",
+			Username:  "testUser",
+		},
+		Password: "123456aA",
+	}
 
-        invalidAccount := Account{
-                PasswordlessAccount: PasswordlessAccount{
-                        FirstName: "Jhone",
-                        LastName: "Doe",
-                },
-                Password: "123A",
-        }
+	invalidAccount := Account{
+		PasswordlessAccount: PasswordlessAccount{
+			FirstName: "Jhone",
+			LastName:  "Doe",
+		},
+		Password: "123A",
+	}
 
-        accountsService := func() Service {
-                return Service{
-                        StartSignupAccount:   func(email string, secAccount SecuredAccount) (string, error) {
+	accountsService := func() Service {
+		return Service{
+			StartSignupAccount: func(email string, secAccount SecuredAccount) (string, error) {
 
-                                return "testID", nil;
-                        },
-                        GetByEmail: func(id string) (PasswordlessAccount, error) {
+				return "testID", nil
+			},
+			GetByUsername: func(id string) (PasswordlessAccount, error) {
 
-                                if id == validAccount.Email {
-                                        return validAccount.PasswordlessAccount, nil
-                                }
+				if id == validAccount.Email {
+					return validAccount.PasswordlessAccount, nil
+				}
 
-                                return PasswordlessAccount{}, ErrAccountNotFound
-                        },
-                        StartResetPassword: func(email string) error {
-                                if email == validAccount.Email {
-                                        return nil
-                                }
+				return PasswordlessAccount{}, ErrAccountNotFound
+			},
+			StartResetPassword: func(email string) error {
+				if email == validAccount.Email {
+					return nil
+				}
 
-                                return ErrAccountNotFound
-                        },
-                }
-        }
+				return ErrAccountNotFound
+			},
+		}
+	}
 
-        createContextAndRecorder := func(controller Controller, req *http.Request) *httptest.ResponseRecorder {
-                rec := httptest.NewRecorder()
+	createContextAndRecorder := func(controller Controller, req *http.Request) *httptest.ResponseRecorder {
+		rec := httptest.NewRecorder()
 
-                e := echo.New()
-                InitRoutes(e, controller, test.CreateSecurity("valid"))
-                e.ServeHTTP(standard.NewRequest(req, e.Logger()), standard.NewResponse(rec, e.Logger()))
-                return rec
-        }
+		e := echo.New()
+		InitRoutes(e, controller, test.CreateSecurity("valid"))
 
-        Convey("for post on accounts", t, func() {
+		res := echo.NewResponse(rec, e)
+		e.ServeHTTP(res, req)
+		return rec
+	}
 
-                Convey("should start singup process", func() {
+	Convey("for post on accounts", t, func() {
 
-                        accountJson, _ := json.Marshal(validAccount)
-                        req, _ := http.NewRequest(echo.POST, "/accounts", strings.NewReader(string(accountJson)))
-                        req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		Convey("should start singup process", func() {
 
-                        resp := createContextAndRecorder(Create(accountsService()), req)
+			accountJson, _ := json.Marshal(validAccount)
+			req, _ := http.NewRequest(echo.POST, "/accounts", strings.NewReader(string(accountJson)))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-                        So(resp.Code, ShouldEqual, http.StatusCreated)
+			resp := createContextAndRecorder(Create(accountsService()), req)
 
-                        createdResp := Account{}
+			So(resp.Code, ShouldEqual, http.StatusCreated)
 
-                        json.Unmarshal(resp.Body.Bytes(), &createdResp)
-                        So(createdResp.Email, ShouldEqual, validAccount.Email)
-                })
+			createdResp := Account{}
 
-                Convey("should return bad request when invalid account data is sent", func() {
+			json.Unmarshal(resp.Body.Bytes(), &createdResp)
+			So(createdResp.Email, ShouldEqual, validAccount.Email)
+		})
 
-                        accountJson, _ := json.Marshal(invalidAccount)
-                        req, _ := http.NewRequest(echo.POST, "/accounts", strings.NewReader(string(accountJson)))
-                        req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		Convey("should return bad request when invalid account data is sent", func() {
 
-                        resp := createContextAndRecorder(Create(accountsService()), req)
+			accountJson, _ := json.Marshal(invalidAccount)
+			req, _ := http.NewRequest(echo.POST, "/accounts", strings.NewReader(string(accountJson)))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-                        So(resp.Code, ShouldEqual, http.StatusBadRequest)
+			resp := createContextAndRecorder(Create(accountsService()), req)
 
-                        errorDto := web.Error{}
+			So(resp.Code, ShouldEqual, http.StatusBadRequest)
 
-                        json.Unmarshal(resp.Body.Bytes(), &errorDto)
+			errorDto := web.Error{}
 
-                        So(errorDto.ErrorDetails, ShouldHaveLength, 2)
-                })
-        })
+			json.Unmarshal(resp.Body.Bytes(), &errorDto)
 
-        Convey("for get on single account should", t, func() {
+			So(errorDto.ErrorDetails, ShouldHaveLength, 3)
+		})
+	})
 
-                Convey("return existing account", func() {
+	Convey("for get on single account should", t, func() {
 
-                        req, _ := http.NewRequest(echo.GET, "/accounts/" + validAccount.Email, strings.NewReader(""))
-                        req.Header.Set("Authorization", "Bearer valid")
+		Convey("return existing account", func() {
 
-                        resp := createContextAndRecorder(Create(accountsService()), req)
-                        So(resp.Code, ShouldEqual, http.StatusOK)
+			req, _ := http.NewRequest(echo.GET, "/accounts/"+validAccount.Email, strings.NewReader(""))
+			req.Header.Set("Authorization", "Bearer valid")
 
-                        account := SecuredAccount{}
-                        json.Unmarshal(resp.Body.Bytes(), &account)
+			resp := createContextAndRecorder(Create(accountsService()), req)
+			So(resp.Code, ShouldEqual, http.StatusOK)
 
-                        So(account.Email, ShouldEqual, validAccount.Email)
-                        So(account.FirstName, ShouldEqual, validAccount.FirstName)
-                        So(account.LastName, ShouldEqual, validAccount.LastName)
-                        So(account.Password, ShouldEqual, Password(""))
-                        So(account.Salt, ShouldBeBlank)
+			account := SecuredAccount{}
+			json.Unmarshal(resp.Body.Bytes(), &account)
 
-                })
+			So(account.Email, ShouldEqual, validAccount.Email)
+			So(account.FirstName, ShouldEqual, validAccount.FirstName)
+			So(account.LastName, ShouldEqual, validAccount.LastName)
+			So(account.Password, ShouldEqual, Password(""))
+			So(account.Salt, ShouldBeBlank)
 
-                Convey("return not found for non existing account", func() {
+		})
 
-                        req, _ := http.NewRequest(echo.GET, "/accounts/ranom@mail.com", strings.NewReader(""))
-                        req.Header.Set("Authorization", "Bearer valid")
+		Convey("return not found for non existing account", func() {
 
-                        resp := createContextAndRecorder(Create(accountsService()), req)
+			req, _ := http.NewRequest(echo.GET, "/accounts/ranom@mail.com", strings.NewReader(""))
+			req.Header.Set("Authorization", "Bearer valid")
 
-                        So(resp.Code, ShouldEqual, http.StatusNotFound)
-                })
+			resp := createContextAndRecorder(Create(accountsService()), req)
 
-                Convey("return access forbidden for invalid token", func() {
+			So(resp.Code, ShouldEqual, http.StatusNotFound)
+		})
 
-                        req, _ := http.NewRequest(echo.GET, "/accounts/ranom@mail.com", strings.NewReader(""))
-                        req.Header.Set("Authorization", "Bearer invalidToken")
+		Convey("return access forbidden for invalid token", func() {
 
-                        resp := createContextAndRecorder(Create(accountsService()), req)
+			req, _ := http.NewRequest(echo.GET, "/accounts/ranom@mail.com", strings.NewReader(""))
+			req.Header.Set("Authorization", "Bearer invalidToken")
 
-                        So(resp.Code, ShouldEqual, http.StatusUnauthorized)
-                })
-        })
+			resp := createContextAndRecorder(Create(accountsService()), req)
 
-        Convey("for post on accounts/:id/reset should", t, func() {
+			So(resp.Code, ShouldEqual, http.StatusUnauthorized)
+		})
+	})
 
-                Convey("start reset password flow", func() {
+	Convey("for post on accounts/:id/reset should", t, func() {
 
-                        req, _ := http.NewRequest(echo.POST, "/accounts/" + validAccount.Email + "/reset", strings.NewReader(""))
+		Convey("start reset password flow", func() {
 
-                        resp := createContextAndRecorder(Create(accountsService()), req)
-                        So(resp.Code, ShouldEqual, http.StatusOK)
+			req, _ := http.NewRequest(echo.POST, "/accounts/"+validAccount.Email+"/reset", strings.NewReader(""))
 
-                })
+			resp := createContextAndRecorder(Create(accountsService()), req)
+			So(resp.Code, ShouldEqual, http.StatusOK)
 
-                Convey("return not found for not existing account", func() {
+		})
 
-                        req, _ := http.NewRequest(echo.POST, "/accounts/random@mail.com/reset", strings.NewReader(""))
+		Convey("return not found for not existing account", func() {
 
-                        resp := createContextAndRecorder(Create(accountsService()), req)
-                        So(resp.Code, ShouldEqual, http.StatusNotFound)
+			req, _ := http.NewRequest(echo.POST, "/accounts/random@mail.com/reset", strings.NewReader(""))
 
-                })
-        })
+			resp := createContextAndRecorder(Create(accountsService()), req)
+			So(resp.Code, ShouldEqual, http.StatusNotFound)
 
-        Convey("for put on accounts/:id/reset should", t, func() {
+		})
+	})
 
-                validCode := "validCode12"
-                accService := Service{
-                        ConfirmResetPassword: func(email string, code string, newPassword Password) error {
-                                if email != validAccount.Email || code != validCode {
-                                        return ErrInvalidResetCode
-                                }
-                                return nil
-                        },
-                }
+	Convey("for put on accounts/:id/reset should", t, func() {
 
-                Convey("confirm reset password", func() {
+		validCode := "validCode12"
+		accService := Service{
+			ConfirmResetPassword: func(email string, code string, newPassword Password) error {
+				if email != validAccount.Email || code != validCode {
+					return ErrInvalidResetCode
+				}
+				return nil
+			},
+		}
 
-                        passDto := PasswordChangeDto{
-                                Code: validCode,
-                                NewPassword: "123456aA",
-                        }
+		Convey("confirm reset password", func() {
 
-                        passDtoJson, _ := json.Marshal(passDto)
+			passDto := PasswordChangeDto{
+				Code:        validCode,
+				NewPassword: "123456aA",
+			}
 
-                        req, _ := http.NewRequest(echo.PUT, "/accounts/" + validAccount.Email + "/reset", strings.NewReader(string(passDtoJson)))
-                        req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-                        resp := createContextAndRecorder(Create(accService), req)
-                        So(resp.Code, ShouldEqual, http.StatusOK)
+			passDtoJson, _ := json.Marshal(passDto)
 
-                })
+			req, _ := http.NewRequest(echo.PUT, "/accounts/"+validAccount.Email+"/reset", strings.NewReader(string(passDtoJson)))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			resp := createContextAndRecorder(Create(accService), req)
+			So(resp.Code, ShouldEqual, http.StatusOK)
 
-                Convey("return bad request for too weak password", func() {
+		})
 
-                        passDto := PasswordChangeDto{
-                                Code: validCode,
-                                NewPassword: "6aA",
-                        }
+		Convey("return bad request for too weak password", func() {
 
-                        passDtoJson, _ := json.Marshal(passDto)
+			passDto := PasswordChangeDto{
+				Code:        validCode,
+				NewPassword: "6aA",
+			}
 
-                        req, _ := http.NewRequest(echo.PUT, "/accounts/" + validAccount.Email + "/reset", strings.NewReader(string(passDtoJson)))
-                        req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-                        resp := createContextAndRecorder(Create(accService), req)
-                        So(resp.Code, ShouldEqual, http.StatusBadRequest)
+			passDtoJson, _ := json.Marshal(passDto)
 
-                })
+			req, _ := http.NewRequest(echo.PUT, "/accounts/"+validAccount.Email+"/reset", strings.NewReader(string(passDtoJson)))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			resp := createContextAndRecorder(Create(accService), req)
+			So(resp.Code, ShouldEqual, http.StatusBadRequest)
 
-                Convey("return bad request for invalid reset code", func() {
+		})
 
-                        passDto := PasswordChangeDto{
-                                Code: "randomCode",
-                                NewPassword: "12345678aA",
-                        }
+		Convey("return bad request for invalid reset code", func() {
 
-                        passDtoJson, _ := json.Marshal(passDto)
+			passDto := PasswordChangeDto{
+				Code:        "randomCode",
+				NewPassword: "12345678aA",
+			}
 
-                        req, _ := http.NewRequest(echo.PUT, "/accounts/" + validAccount.Email + "/reset", strings.NewReader(string(passDtoJson)))
-                        req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-                        resp := createContextAndRecorder(Create(accService), req)
+			passDtoJson, _ := json.Marshal(passDto)
 
-                        So(resp.Code, ShouldEqual, http.StatusBadRequest)
-                })
+			req, _ := http.NewRequest(echo.PUT, "/accounts/"+validAccount.Email+"/reset", strings.NewReader(string(passDtoJson)))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			resp := createContextAndRecorder(Create(accService), req)
 
-        })
+			So(resp.Code, ShouldEqual, http.StatusBadRequest)
+		})
 
-        Convey("for put on accounts/:id/confirm should", t, func() {
+	})
 
-                validCode := "validCode12"
-                accService := Service{
-                        ConfirmAccount: func(email string, code string) (bool, error) {
-                                if email != validAccount.Email {
-                                        return false, ErrAccountNotFound
-                                }
+	Convey("for put on accounts/:id/confirm should", t, func() {
 
-                                if  code != validCode {
-                                        return false, nil
-                                }
+		validCode := "validCode12"
+		accService := Service{
+			ConfirmAccount: func(email string, code string) (bool, error) {
+				if email != validAccount.Email {
+					return false, ErrAccountNotFound
+				}
 
-                                return true, nil
-                        },
-                }
+				if code != validCode {
+					return false, nil
+				}
 
-                Convey("confirm account", func() {
+				return true, nil
+			},
+		}
 
-                        req, _ := http.NewRequest(echo.GET, "/accounts/" + validAccount.Email + "/confirm?code=" + validCode, strings.NewReader(string("")))
-                        req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		Convey("confirm account", func() {
 
-                        resp := createContextAndRecorder(Create(accService), req)
-                        So(resp.Code, ShouldEqual, http.StatusOK)
+			req, _ := http.NewRequest(echo.GET, "/accounts/"+validAccount.Email+"/confirm?code="+validCode, strings.NewReader(string("")))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-                })
+			resp := createContextAndRecorder(Create(accService), req)
+			So(resp.Code, ShouldEqual, http.StatusOK)
 
-                Convey("return bad request for invalid code", func() {
+		})
 
-                        req, _ := http.NewRequest(echo.GET, "/accounts/" + validAccount.Email + "/confirm?code=invalidCode", strings.NewReader(string("")))
-                        req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		Convey("return bad request for invalid code", func() {
 
-                        resp := createContextAndRecorder(Create(accService), req)
-                        So(resp.Code, ShouldEqual, http.StatusBadRequest)
-                })
+			req, _ := http.NewRequest(echo.GET, "/accounts/"+validAccount.Email+"/confirm?code=invalidCode", strings.NewReader(string("")))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-                Convey("return error when error occured", func() {
-                        req, _ := http.NewRequest(echo.GET, "/accounts/notexistin@mail.com/confirm?code=invalidCode", strings.NewReader(string("")))
-                        req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			resp := createContextAndRecorder(Create(accService), req)
+			So(resp.Code, ShouldEqual, http.StatusBadRequest)
+		})
 
-                        resp := createContextAndRecorder(Create(accService), req)
-                        So(resp.Code, ShouldEqual, http.StatusInternalServerError)
-                })
+		Convey("return error when error occured", func() {
+			req, _ := http.NewRequest(echo.GET, "/accounts/notexistin@mail.com/confirm?code=invalidCode", strings.NewReader(string("")))
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
-        })
+			resp := createContextAndRecorder(Create(accService), req)
+			So(resp.Code, ShouldEqual, http.StatusInternalServerError)
+		})
+
+	})
 
 }

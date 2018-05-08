@@ -52,7 +52,7 @@ func Create(service Service) Controller {
 	getById := func(c echo.Context) error {
 
 		id := c.Param("id")
-		account, err := service.GetByEmail(id)
+		account, err := service.GetByUsername(id)
 
 		if err != nil {
 
@@ -154,10 +154,9 @@ func Create(service Service) Controller {
 		return c.JSON(http.StatusOK, "")
 	}
 
-
 	return Controller{
-		Create:  create,
-		GetByID: getById,
+		Create:               create,
+		GetByID:              getById,
 		ConfirmResetPassword: confirmResetPassword,
 		ConfirmAccount:       confirmAccount,
 		ResetPassword:        resetPassword,
