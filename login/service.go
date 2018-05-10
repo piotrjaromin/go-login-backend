@@ -10,11 +10,11 @@ import (
 //Errors that can be returned by this module
 var (
 	ErrMissingPasswordOrUsername = errors.New("Both password and username are required")
-	ErrCouldNotFetchAccount = errors.New("Error while fetching account for authentication")
-	ErrNotFoundAccount = errors.New("Account does not exist")
-	ErrNotConfirmedAccount = errors.New("Account is not confirmed")
-	ErrBadCredentials = errors.New("Invalid credentials")
-	ErrCouldNotGenerateToken = errors.New("Could not generate token")
+	ErrCouldNotFetchAccount      = errors.New("Error while fetching account for authentication")
+	ErrNotFoundAccount           = errors.New("Account does not exist")
+	ErrNotConfirmedAccount       = errors.New("Account is not confirmed")
+	ErrBadCredentials            = errors.New("Invalid credentials")
+	ErrCouldNotGenerateToken     = errors.New("Could not generate token")
 )
 
 //Service with login function
@@ -52,7 +52,7 @@ func CreateService(accountsDal accounts.Dal, encrypt accounts.Encrypt, tokenServ
 			return nil, ErrBadCredentials
 		}
 
-		tokenStr, err := tokenService.GenerateToken(secAccount.Email, secAccount.Id)
+		tokenStr, err := tokenService.GenerateToken(secAccount.Username, secAccount.Id)
 		if err != nil {
 			return nil, ErrCouldNotGenerateToken
 		}

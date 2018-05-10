@@ -1,28 +1,26 @@
 package fbLogin
 
 import (
-        fb "github.com/huandu/facebook"
-        "errors"
-        "github.com/op/go-logging"
+	"errors"
+	fb "github.com/huandu/facebook"
+	"github.com/op/go-logging"
 	"github.com/piotrjaromin/go-login-backend/accounts"
-        "github.com/piotrjaromin/go-login-backend/jwtTokens"
-        
+	"github.com/piotrjaromin/go-login-backend/jwtTokens"
 )
 
 //Errors that can be returned by this module
 var (
-	ErrInvalidFbToken = errors.New("Invalid fb session token was sent")
-	ErrFbFetchFailed = errors.New("Could not fetch data from facebook")
+	ErrInvalidFbToken        = errors.New("Invalid fb session token was sent")
+	ErrFbFetchFailed         = errors.New("Could not fetch data from facebook")
 	ErrCouldNotCreateAccount = errors.New("Could not create account")
 	ErrCouldNotUpdateAccount = errors.New("Could not update account")
-        ErrCouldNotFetchAccount = errors.New("Could not fetch account")
-        ErrCouldNotGenerateToken = errors.New("Could not generate token")
+	ErrCouldNotFetchAccount  = errors.New("Could not fetch account")
+	ErrCouldNotGenerateToken = errors.New("Could not generate token")
 )
-
 
 //FbConfig with clientId and clientSecret from facebook developers site
 type FbConfig struct {
-        ClientID string
+	ClientID     string
 	ClientSecret string
 }
 
@@ -32,91 +30,91 @@ type Service struct {
 }
 
 //CreateService for fb login
-func CreateService(fbConfig FbConfig, accountsDal accounts.Dal, accountsService accounts.Service, tokenService jwtTokens.TokenService) Service{
+func CreateService(fbConfig FbConfig, accountsDal accounts.Dal, accountsService accounts.Service, tokenService jwtTokens.TokenService) Service {
 
-        var log = logging.MustGetLogger("[FbLoginService]")
-        app := fb.New(fbConfig.ClientID, fbConfig.ClientSecret)
+	var log = logging.MustGetLogger("[FbLoginService]")
+	app := fb.New(fbConfig.ClientID, fbConfig.ClientSecret)
 
 	updateAccount := func(fbEmail, fbId, fbFirstName, fbLastName string) error {
 
-                return accountsDal.UpdateByEmail(fbEmail, func(acc *accounts.SecuredAccount) error {
+		return accountsDal.UpdateByEmail(fbEmail, func(acc *accounts.SecuredAccount) error {
 
-                        log.Infof("Acc is %+v\n", *acc)
-                        acc.AuthProviders.FB = fbId
-                        if len(acc.FirstName) == 0 {
-                                log.Info("update first name ", fbFirstName)
-                                acc.FirstName = fbFirstName
-                        }
+			log.Infof("Acc is %+v\n", *acc)
+			acc.AuthProviders.FB = fbId
+			if len(acc.FirstName) == 0 {
+				log.Info("update first name ", fbFirstName)
+				acc.FirstName = fbFirstName
+			}
 
-                        if len(acc.LastName) == 0 {
-                                log.Info("update last name ", fbLastName)
-                                acc.LastName = fbLastName
-                        }
-                        return nil
-                })
-        }
+			if len(acc.LastName) == 0 {
+				log.Info("update last name ", fbLastName)
+				acc.LastName = fbLastName
+			}
+			return nil
+		})
+	}
 
 	login := func(fbToken Token) (*Token, error) {
-		
-                session := app.Session(fbToken.Token)
 
-                if err := session.Validate(); err != nil {
-                        log.Warning("Invalid session token was sent: " + err.Error())
-                        return nil, ErrInvalidFbToken
-                }
+		session := app.Session(fbToken.Token)
 
-                res, fbErr := session.Get("/me", fb.Params{
-                        "fields":       "first_name,last_name,email,id",
-                        "access_token": fbToken.Token,
-                })
+		if err := session.Validate(); err != nil {
+			log.Warning("Invalid session token was sent: " + err.Error())
+			return nil, ErrInvalidFbToken
+		}
 
-                if fbErr != nil {
-                        return nil, ErrFbFetchFailed
-                }
+		res, fbErr := session.Get("/me", fb.Params{
+			"fields":       "first_name,last_name,email,id",
+			"access_token": fbToken.Token,
+		})
 
-                fbEmail := res["email"].(string)
-                fbID := res["id"].(string)
-                fbFirstName := res["first_name"].(string)
-                fbLastName := res["last_name"].(string)
+		if fbErr != nil {
+			return nil, ErrFbFetchFailed
+		}
 
-                acc, err := accountsDal.GetByEmail(fbEmail)
+		fbEmail := res["email"].(string)
+		fbID := res["id"].(string)
+		fbFirstName := res["first_name"].(string)
+		fbLastName := res["last_name"].(string)
 
-                accountID := acc.Id
-                if err == accounts.ErrAccountNotFound {
+		acc, err := accountsDal.GetByEmail(fbEmail)
 
-                        secAcc := accounts.SecuredAccount{
-                                Account: accounts.Account{
-                                        PasswordlessAccount: accounts.PasswordlessAccount{
-                                                Id: fbEmail,
-                                                FirstName: fbFirstName,
-                                                LastName: fbLastName,
-                                                AuthProviders: accounts.AuthProviders{FB:fbID},
-                                                Username: fbFirstName+fbLastName,
-                                        },
-                                },
-                        }
-                        if accountID, err = accountsService.CreateAccount(fbEmail, secAcc); err != nil {
-                                return nil, ErrCouldNotCreateAccount
-                        }
+		accountID := acc.Id
+		if err == accounts.ErrAccountNotFound {
 
-                } else if err != nil {
-                        return nil, ErrCouldNotFetchAccount
-                }
+			secAcc := accounts.SecuredAccount{
+				Account: accounts.Account{
+					PasswordlessAccount: accounts.PasswordlessAccount{
+						Id:            fbEmail,
+						FirstName:     fbFirstName,
+						LastName:      fbLastName,
+						AuthProviders: accounts.AuthProviders{FB: fbID},
+						Username:      fbFirstName + fbLastName,
+					},
+				},
+			}
+			if accountID, err = accountsService.CreateAccount(fbEmail, secAcc); err != nil {
+				return nil, ErrCouldNotCreateAccount
+			}
 
-                if acc.AuthProviders.FB != fbID {
-                        if err := updateAccount(fbEmail, fbID, fbFirstName, fbLastName); err != nil {
-                                 return nil, ErrCouldNotUpdateAccount
-                        }                       
-                }
+		} else if err != nil {
+			return nil, ErrCouldNotFetchAccount
+		}
 
-                tokenStr, err := tokenService.GenerateToken(fbEmail, accountID)
-                if err != nil {
-                        return nil, ErrCouldNotGenerateToken
-                }
+		if acc.AuthProviders.FB != fbID {
+			if err := updateAccount(fbEmail, fbID, fbFirstName, fbLastName); err != nil {
+				return nil, ErrCouldNotUpdateAccount
+			}
+		}
 
-                return &Token{
-                        Token: tokenStr,
-                }, nil
+		tokenStr, err := tokenService.GenerateToken(fbFirstName+"."+fbLastName, accountID)
+		if err != nil {
+			return nil, ErrCouldNotGenerateToken
+		}
+
+		return &Token{
+			Token: tokenStr,
+		}, nil
 	}
 
 	return Service{
